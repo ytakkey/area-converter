@@ -3,333 +3,408 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>面積単位換算 — 畳・坪・平米</title>
-  <meta name="description" content="畳・坪・平米をリアルタイムで換算できるツールです。1畳=910×1820mm、1坪=3.3057㎡を基準としています。">
+  <title>面積換算 · 建物本体価格</title>
+  <meta name="description" content="畳・坪・平米をリアルタイムで換算し、建物本体価格（税抜・税込）を自動計算します。">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f5f4f0;
-      --surface: #ffffff;
-      --surface-sub: #f0efeb;
-      --border: rgba(0,0,0,0.10);
-      --border-hover: rgba(0,0,0,0.22);
-      --text-primary: #1a1a18;
-      --text-secondary: #6a6966;
-      --text-tertiary: #a8a7a3;
-      --radius-md: 8px;
-      --radius-lg: 12px;
+      --glass-bg:      rgba(255,255,255,0.62);
+      --glass-border:  rgba(255,255,255,0.75);
+      --glass-inner:   rgba(255,255,255,0.45);
+      --glass-sep:     rgba(0,0,0,0.07);
+      --btn-bg:        rgba(255,255,255,0.55);
+      --btn-border:    rgba(0,0,0,0.10);
+      --ref-bg:        rgba(255,255,255,0.50);
+      --ref-border:    rgba(255,255,255,0.70);
+      --shadow:        0 8px 32px rgba(80,70,60,0.13), 0 1.5px 4px rgba(80,70,60,0.07);
+      --shadow-sm:     0 2px 10px rgba(80,70,60,0.09);
+      --text-1:        #1a1916;
+      --text-2:        #6b6966;
+      --text-3:        #b0ada9;
+      --radius-xl:     22px;
+      --radius-lg:     16px;
+      --radius-md:     11px;
+      --radius-sm:     7px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #242422;
-        --surface: #2e2e2c;
-        --surface-sub: #363634;
-        --border: rgba(255,255,255,0.10);
-        --border-hover: rgba(255,255,255,0.24);
-        --text-primary: #eeecea;
-        --text-secondary: #a8a7a3;
-        --text-tertiary: #6a6966;
+        --glass-bg:     rgba(38,36,34,0.72);
+        --glass-border: rgba(255,255,255,0.12);
+        --glass-inner:  rgba(255,255,255,0.05);
+        --glass-sep:    rgba(255,255,255,0.08);
+        --btn-bg:       rgba(255,255,255,0.08);
+        --btn-border:   rgba(255,255,255,0.13);
+        --ref-bg:       rgba(40,38,36,0.65);
+        --ref-border:   rgba(255,255,255,0.10);
+        --shadow:       0 8px 32px rgba(0,0,0,0.38), 0 1.5px 4px rgba(0,0,0,0.22);
+        --shadow-sm:    0 2px 10px rgba(0,0,0,0.25);
+        --text-1:       #edebe8;
+        --text-2:       #a8a5a1;
+        --text-3:       #6a6764;
       }
     }
 
+    html, body {
+      min-height: 100%;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
-      background: var(--bg);
-      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: #ddd5c8;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(210,195,175,0.9) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(185,200,210,0.7) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 60% at 60% 30%, rgba(220,210,195,0.5) 0%, transparent 50%);
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 3rem 1rem 4rem;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 4rem 1.25rem 5rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1e1c1a;
+        background-image:
+          radial-gradient(ellipse 80% 60% at 20% 10%, rgba(50,45,40,0.95) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 50% at 80% 80%, rgba(35,42,50,0.8) 0%, transparent 55%),
+          radial-gradient(ellipse 50% 60% at 60% 30%, rgba(45,42,38,0.6) 0%, transparent 50%);
+      }
     }
 
     .container {
       width: 100%;
-      max-width: 640px;
+      max-width: 580px;
     }
 
-    .title-block {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-    .title-block h1 {
-      font-size: 22px;
+    /* ── header ── */
+    .header { margin-bottom: 2rem; }
+    .eyebrow {
+      font-size: 11px;
       font-weight: 500;
+      letter-spacing: .12em;
+      color: var(--text-3);
       margin-bottom: 4px;
     }
-    .title-block p {
-      font-size: 13px;
-      color: var(--text-secondary);
+    .title {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+      color: var(--text-1);
     }
 
-    .unit-grid {
+    /* ── main glass card ── */
+    .main-card {
+      background: var(--glass-bg);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      backdrop-filter: blur(28px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* ── input grid ── */
+    .inp-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 1.5rem;
     }
 
-    @media (max-width: 400px) {
-      .unit-grid { grid-template-columns: 1fr; }
+    @media (max-width: 380px) {
+      .inp-grid { grid-template-columns: 1fr; }
+      .inp-cell { border-right: none !important; border-bottom: 1px solid var(--glass-sep); }
+      .inp-cell:last-child { border-bottom: none; }
     }
 
-    .unit-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem;
-      transition: border-color 0.15s;
+    .inp-cell {
+      padding: 1.25rem 1.1rem 1.1rem;
+      border-right: 1px solid var(--glass-sep);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    .unit-card:focus-within {
-      border-color: var(--border-hover);
-    }
-    .unit-label {
+    .inp-cell:last-child { border-right: none; }
+
+    .cell-top {
       display: flex;
       align-items: baseline;
-      gap: 6px;
-      margin-bottom: 10px;
+      justify-content: space-between;
     }
-    .unit-kanji {
-      font-size: 20px;
-      font-weight: 500;
-    }
-    .unit-sub {
-      font-size: 11px;
-      color: var(--text-secondary);
-    }
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      border-bottom: 1.5px solid var(--border);
-      padding-bottom: 4px;
-      transition: border-color 0.15s;
-    }
-    .unit-card:focus-within .input-row {
-      border-color: var(--border-hover);
-    }
-    .unit-card input {
-      flex: 1;
-      min-width: 0;
-      font-size: 18px;
-      font-weight: 500;
-      font-family: inherit;
-      border: none;
-      background: transparent;
-      color: var(--text-primary);
-      padding: 4px 0;
-      outline: none;
-    }
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    input[type=number] { -moz-appearance: textfield; }
+    .cu { font-size: 16px; font-weight: 600; color: var(--text-1); }
+    .cs { font-size: 10px; color: var(--text-3); }
 
-    .spin-btn {
+    .irow { display: flex; align-items: center; gap: 5px; }
+
+    .spin {
       flex-shrink: 0;
-      width: 28px;
-      height: 28px;
-      border: 0.5px solid var(--border);
-      border-radius: 6px;
-      background: var(--surface-sub);
-      color: var(--text-secondary);
-      font-size: 18px;
-      line-height: 1;
+      width: 26px; height: 26px;
+      background: var(--btn-bg);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--btn-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-2);
+      font-size: 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       user-select: none;
-      transition: background 0.1s, border-color 0.1s, color 0.1s;
       -webkit-tap-highlight-color: transparent;
+      transition: background .12s, color .12s, transform .08s;
     }
-    .spin-btn:hover {
-      background: var(--bg);
-      border-color: var(--border-hover);
-      color: var(--text-primary);
-    }
-    .spin-btn:active { opacity: 0.65; }
+    .spin:hover { background: rgba(255,255,255,0.75); color: var(--text-1); }
+    .spin:active { transform: scale(0.92); opacity: .7; }
 
-    .unit-desc {
-      font-size: 11px;
-      color: var(--text-tertiary);
-      margin-top: 8px;
+    .inp-cell input {
+      flex: 1; min-width: 0;
+      font-size: 20px; font-weight: 600;
+      font-family: inherit;
+      border: none;
+      background: transparent;
+      color: var(--text-1);
+      padding: 1px 0;
+      outline: none;
+      caret-color: var(--text-2);
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    .cell-hint { font-size: 10px; color: var(--text-3); }
+
+    /* ── price section ── */
+    .price-section {
+      border-top: 1px solid var(--glass-sep);
+      padding: 1.1rem 1.35rem 1.4rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .pr-left { display: flex; flex-direction: column; gap: 3px; }
+    .pr-label { font-size: 11px; font-weight: 500; letter-spacing: .05em; color: var(--text-3); }
+    .pr-rate  { font-size: 10px; color: var(--text-3); }
+
+    .pr-right { text-align: right; }
+    .pr-ex {
+      font-size: 27px; font-weight: 600;
+      letter-spacing: -.03em;
+      color: var(--text-1);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+      transition: color .2s;
+    }
+    .pr-ex.empty { color: var(--text-3); font-size: 21px; font-weight: 400; }
+    .pr-inc {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-top: 3px;
+      font-variant-numeric: tabular-nums;
     }
 
-    .ref-section {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 1.25rem;
-    }
-    .ref-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
+    /* ── presets ── */
+    .section-gap { margin-top: 1.25rem; }
+    .ref-eyebrow {
+      font-size: 11px; font-weight: 500;
+      letter-spacing: .09em;
+      color: var(--text-3);
+      margin-bottom: 10px;
+      padding-left: 2px;
     }
     .ref-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+      gap: 7px;
     }
-    .ref-item {
-      background: var(--surface-sub);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-md);
+    .ri {
+      background: var(--ref-bg);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid var(--ref-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
       padding: 10px 12px;
       cursor: pointer;
-      transition: border-color 0.15s;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      transition: transform .12s, box-shadow .12s;
     }
-    .ref-item:hover { border-color: var(--border-hover); }
-    .ref-item:active { opacity: 0.75; }
-    .ref-name {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-bottom: 4px;
-    }
-    .ref-vals {
-      font-size: 13px;
-      font-weight: 500;
-    }
-    .ref-vals span {
-      color: var(--text-tertiary);
-      font-weight: 400;
-      font-size: 11px;
-    }
+    .ri:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(80,70,60,0.14); }
+    .ri:active { transform: scale(0.97); opacity: .8; }
+    .rn { font-size: 11px; color: var(--text-2); margin-bottom: 3px; }
+    .rv { font-size: 12px; font-weight: 600; color: var(--text-1); }
+    .rv em { font-style: normal; color: var(--text-3); font-weight: 400; font-size: 10px; }
 
-    .rate-note {
+    /* ── footnote ── */
+    .footnote {
       text-align: center;
-      font-size: 11px;
-      color: var(--text-tertiary);
-      margin-top: 1.25rem;
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 1.5rem;
+      line-height: 1.9;
+      padding: 0 1rem;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="title-block">
-      <h1>面積単位 換算</h1>
-      <p>畳・坪・平米をリアルタイムで変換</p>
-    </div>
+<div class="container">
 
-    <div class="unit-grid">
-      <div class="unit-card">
-        <div class="unit-label">
-          <span class="unit-kanji">畳</span>
-          <span class="unit-sub">じょう</span>
-        </div>
-        <div class="input-row">
-          <button class="spin-btn" onclick="step('jo', -0.5)">−</button>
-          <input type="number" id="jo" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromJo(this.value)">
-          <button class="spin-btn" onclick="step('jo', 0.5)">+</button>
-        </div>
-        <div class="unit-desc">1畳 = 910 × 1820 mm = 1.6562 m²</div>
-      </div>
-      <div class="unit-card">
-        <div class="unit-label">
-          <span class="unit-kanji">坪</span>
-          <span class="unit-sub">つぼ</span>
-        </div>
-        <div class="input-row">
-          <button class="spin-btn" onclick="step('tsubo', -0.5)">−</button>
-          <input type="number" id="tsubo" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromTsubo(this.value)">
-          <button class="spin-btn" onclick="step('tsubo', 0.5)">+</button>
-        </div>
-        <div class="unit-desc">1坪 = 3.3057 m²</div>
-      </div>
-      <div class="unit-card">
-        <div class="unit-label">
-          <span class="unit-kanji">㎡</span>
-          <span class="unit-sub">平米</span>
-        </div>
-        <div class="input-row">
-          <button class="spin-btn" onclick="step('m2', -0.5)">−</button>
-          <input type="number" id="m2" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromM2(this.value)">
-          <button class="spin-btn" onclick="step('m2', 0.5)">+</button>
-        </div>
-        <div class="unit-desc">1m² ≈ 0.6038 畳 / 0.3025 坪</div>
-      </div>
-    </div>
-
-    <div class="ref-section">
-      <p class="ref-title">よくある間取りの広さ（タップで入力）</p>
-      <div class="ref-grid">
-        <div class="ref-item" onclick="setJo(4.5)">
-          <div class="ref-name">4.5畳（和室）</div>
-          <div class="ref-vals">2.25 坪 <span>/ 7.45 m²</span></div>
-        </div>
-        <div class="ref-item" onclick="setJo(6)">
-          <div class="ref-name">6畳（洋室）</div>
-          <div class="ref-vals">3.01 坪 <span>/ 9.94 m²</span></div>
-        </div>
-        <div class="ref-item" onclick="setJo(8)">
-          <div class="ref-name">8畳（LDK）</div>
-          <div class="ref-vals">4.01 坪 <span>/ 13.25 m²</span></div>
-        </div>
-        <div class="ref-item" onclick="setJo(20)">
-          <div class="ref-name">20畳（広めリビング）</div>
-          <div class="ref-vals">10.02 坪 <span>/ 33.12 m²</span></div>
-        </div>
-        <div class="ref-item" onclick="setTsubo(30)">
-          <div class="ref-name">30坪（一戸建て）</div>
-          <div class="ref-vals">59.88 畳 <span>/ 99.17 m²</span></div>
-        </div>
-        <div class="ref-item" onclick="setM2(50)">
-          <div class="ref-name">50m²（1LDK）</div>
-          <div class="ref-vals">30.19 畳 <span>/ 15.13 坪</span></div>
-        </div>
-      </div>
-    </div>
-
-    <p class="rate-note">※ 1畳 = 910mm × 1820mm、1坪 = 3.3057 m²（それぞれ独立した定義）</p>
+  <div class="header">
+    <p class="eyebrow">面積単位換算</p>
+    <h1 class="title">畳 · 坪 · 平米</h1>
   </div>
 
-  <script>
-    const JO_M2 = 0.910 * 1.820;
-    const TSUBO_M2 = 3.3057;
+  <div class="main-card">
+    <div class="inp-grid">
+      <div class="inp-cell">
+        <div class="cell-top"><span class="cu">畳</span><span class="cs">じょう</span></div>
+        <div class="irow">
+          <button class="spin" onclick="step('jo',-0.5)">−</button>
+          <input type="number" id="jo" placeholder="—" min="0" step="0.5" inputmode="decimal" oninput="fromJo(this.value)">
+          <button class="spin" onclick="step('jo',0.5)">+</button>
+        </div>
+        <span class="cell-hint">910 × 1820 mm</span>
+      </div>
+      <div class="inp-cell">
+        <div class="cell-top"><span class="cu">坪</span><span class="cs">つぼ</span></div>
+        <div class="irow">
+          <button class="spin" onclick="step('tsubo',-0.5)">−</button>
+          <input type="number" id="tsubo" placeholder="—" min="0" step="0.5" inputmode="decimal" oninput="fromTsubo(this.value)">
+          <button class="spin" onclick="step('tsubo',0.5)">+</button>
+        </div>
+        <span class="cell-hint">= 3.3057 m²</span>
+      </div>
+      <div class="inp-cell">
+        <div class="cell-top"><span class="cu">㎡</span><span class="cs">平米</span></div>
+        <div class="irow">
+          <button class="spin" onclick="step('m2',-0.5)">−</button>
+          <input type="number" id="m2" placeholder="—" min="0" step="0.5" inputmode="decimal" oninput="fromM2(this.value)">
+          <button class="spin" onclick="step('m2',0.5)">+</button>
+        </div>
+        <span class="cell-hint">≈ 0.6038 畳</span>
+      </div>
+    </div>
 
-    function fmt(v) {
-      if (v === '' || isNaN(v)) return '';
-      const n = parseFloat(v);
-      if (n === 0) return '0';
-      return parseFloat(n.toFixed(4)).toString();
-    }
+    <div class="price-section">
+      <div class="pr-left">
+        <span class="pr-label">建物本体価格</span>
+        <span class="pr-rate">237,160 円 / m²</span>
+      </div>
+      <div class="pr-right">
+        <div class="pr-ex empty" id="pr-ex">—</div>
+        <div class="pr-inc" id="pr-inc"></div>
+      </div>
+    </div>
+  </div>
 
-    function fromJo(v) {
-      const n = parseFloat(v);
-      if (isNaN(n)) { document.getElementById('tsubo').value = ''; document.getElementById('m2').value = ''; return; }
-      const m2 = n * JO_M2;
-      document.getElementById('m2').value = fmt(m2);
-      document.getElementById('tsubo').value = fmt(m2 / TSUBO_M2);
-    }
-    function fromTsubo(v) {
-      const n = parseFloat(v);
-      if (isNaN(n)) { document.getElementById('jo').value = ''; document.getElementById('m2').value = ''; return; }
-      const m2 = n * TSUBO_M2;
-      document.getElementById('m2').value = fmt(m2);
-      document.getElementById('jo').value = fmt(m2 / JO_M2);
-    }
-    function fromM2(v) {
-      const n = parseFloat(v);
-      if (isNaN(n)) { document.getElementById('jo').value = ''; document.getElementById('tsubo').value = ''; return; }
-      document.getElementById('jo').value = fmt(n / JO_M2);
-      document.getElementById('tsubo').value = fmt(n / TSUBO_M2);
-    }
-    function setJo(v) { document.getElementById('jo').value = v; fromJo(v); }
-    function setTsubo(v) { document.getElementById('tsubo').value = v; fromTsubo(v); }
-    function setM2(v) { document.getElementById('m2').value = v; fromM2(v); }
+  <div class="section-gap">
+    <p class="ref-eyebrow">間取りの目安</p>
+    <div class="ref-grid">
+      <div class="ri" onclick="setJo(4.5)">
+        <div class="rn">4.5畳・和室</div>
+        <div class="rv">7.45 m² <em>/ 2.25 坪</em></div>
+      </div>
+      <div class="ri" onclick="setJo(6)">
+        <div class="rn">6畳・洋室</div>
+        <div class="rv">9.94 m² <em>/ 3.01 坪</em></div>
+      </div>
+      <div class="ri" onclick="setJo(8)">
+        <div class="rn">8畳・LDK</div>
+        <div class="rv">13.25 m² <em>/ 4.01 坪</em></div>
+      </div>
+      <div class="ri" onclick="setJo(20)">
+        <div class="rn">20畳・リビング</div>
+        <div class="rv">33.12 m² <em>/ 10.02 坪</em></div>
+      </div>
+      <div class="ri" onclick="setTsubo(30)">
+        <div class="rn">30坪・一戸建て</div>
+        <div class="rv">99.17 m² <em>/ 59.88 畳</em></div>
+      </div>
+    </div>
+  </div>
 
-    function step(id, delta) {
-      const el = document.getElementById(id);
-      const cur = parseFloat(el.value) || 0;
-      const next = Math.max(0, parseFloat((cur + delta).toFixed(2)));
-      el.value = next;
-      el.dispatchEvent(new Event('input'));
+  <p class="footnote">
+    1畳 = 910 × 1820 mm　·　1坪 = 3.3057 m²<br>
+    建物本体価格は参考値です。消費税率 10% で計算しています。
+  </p>
+</div>
+
+<script>
+  const JO = 0.91 * 1.82;
+  const TSU = 3.3057;
+  const UP = 237160;
+  const TAX = 1.1;
+
+  function fmt(v) {
+    if (isNaN(v)) return '';
+    const n = parseFloat(v);
+    return n === 0 ? '0' : parseFloat(n.toFixed(4)).toString();
+  }
+
+  function kanji(p) {
+    const man = Math.floor(p / 10000);
+    const oku = Math.floor(man / 10000);
+    if (oku > 0) {
+      const r = man % 10000;
+      return oku + '億' + (r > 0 ? r.toLocaleString() + '万' : '') + '円';
     }
-  </script>
+    if (man > 0) {
+      const r = p % 10000;
+      return man.toLocaleString() + '万' + (r > 0 ? r.toLocaleString() + '円' : '円');
+    }
+    return p.toLocaleString() + '円';
+  }
+
+  function updatePrice(m2) {
+    const ex = document.getElementById('pr-ex');
+    const inc = document.getElementById('pr-inc');
+    if (isNaN(m2) || m2 <= 0) {
+      ex.textContent = '—'; ex.className = 'pr-ex empty'; inc.textContent = ''; return;
+    }
+    const p  = Math.round(m2 * UP);
+    const pi = Math.round(p * TAX);
+    ex.textContent = kanji(p) + '（税抜）';
+    ex.className = 'pr-ex';
+    inc.textContent = '税込 ' + kanji(pi);
+  }
+
+  function fromJo(v) {
+    const n = parseFloat(v);
+    if (isNaN(n)) { document.getElementById('tsubo').value=''; document.getElementById('m2').value=''; updatePrice(NaN); return; }
+    const m2 = n * JO;
+    document.getElementById('m2').value = fmt(m2);
+    document.getElementById('tsubo').value = fmt(m2 / TSU);
+    updatePrice(m2);
+  }
+  function fromTsubo(v) {
+    const n = parseFloat(v);
+    if (isNaN(n)) { document.getElementById('jo').value=''; document.getElementById('m2').value=''; updatePrice(NaN); return; }
+    const m2 = n * TSU;
+    document.getElementById('m2').value = fmt(m2);
+    document.getElementById('jo').value = fmt(m2 / JO);
+    updatePrice(m2);
+  }
+  function fromM2(v) {
+    const n = parseFloat(v);
+    if (isNaN(n)) { document.getElementById('jo').value=''; document.getElementById('tsubo').value=''; updatePrice(NaN); return; }
+    document.getElementById('jo').value = fmt(n / JO);
+    document.getElementById('tsubo').value = fmt(n / TSU);
+    updatePrice(n);
+  }
+  function setJo(v)    { document.getElementById('jo').value = v;    fromJo(v); }
+  function setTsubo(v) { document.getElementById('tsubo').value = v; fromTsubo(v); }
+  function setM2(v)    { document.getElementById('m2').value = v;    fromM2(v); }
+
+  function step(id, delta) {
+    const el = document.getElementById(id);
+    const next = Math.max(0, parseFloat(((parseFloat(el.value) || 0) + delta).toFixed(2)));
+    el.value = next;
+    el.dispatchEvent(new Event('input'));
+  }
+</script>
 </body>
 </html>
