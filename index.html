@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>面積単位換算 — 畳・坪・平米</title>
+  <meta name="description" content="畳・坪・平米をリアルタイムで換算できるツールです。1畳=910×1820mm、1坪=3.3057㎡を基準としています。">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.12);
+      --border-hover: rgba(0,0,0,0.25);
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #9a9893;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --surface: #242422;
+        --border: rgba(255,255,255,0.12);
+        --border-hover: rgba(255,255,255,0.28);
+        --text-primary: #eeecea;
+        --text-secondary: #a8a7a3;
+        --text-tertiary: #6a6966;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem 4rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .title-block {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .title-block h1 {
+      font-size: 22px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .title-block p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 420px) {
+      .unit-grid { grid-template-columns: 1fr; }
+    }
+
+    .unit-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      transition: border-color 0.15s;
+    }
+    .unit-card:focus-within {
+      border-color: var(--border-hover);
+    }
+    .unit-label {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .unit-kanji {
+      font-size: 20px;
+      font-weight: 500;
+    }
+    .unit-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+    .unit-card input {
+      width: 100%;
+      font-size: 18px;
+      font-weight: 500;
+      font-family: inherit;
+      border: none;
+      border-bottom: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-primary);
+      padding: 4px 0;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .unit-card input:focus {
+      border-color: var(--border-hover);
+    }
+    .unit-desc {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 6px;
+    }
+
+    .ref-section {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+    .ref-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .ref-item {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      user-select: none;
+    }
+    .ref-item:hover { border-color: var(--border-hover); }
+    .ref-item:active { opacity: 0.8; }
+    .ref-name {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .ref-vals {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .ref-vals span {
+      color: var(--text-tertiary);
+      font-weight: 400;
+      font-size: 11px;
+    }
+
+    .rate-note {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title-block">
+      <h1>面積単位 換算</h1>
+      <p>畳・坪・平米をリアルタイムで変換</p>
+    </div>
+
+    <div class="unit-grid">
+      <div class="unit-card">
+        <div class="unit-label">
+          <span class="unit-kanji">畳</span>
+          <span class="unit-sub">じょう</span>
+        </div>
+        <input type="number" id="jo" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromJo(this.value)">
+        <div class="unit-desc">1畳 = 910 × 1820 mm = 1.6562 m²</div>
+      </div>
+      <div class="unit-card">
+        <div class="unit-label">
+          <span class="unit-kanji">坪</span>
+          <span class="unit-sub">つぼ</span>
+        </div>
+        <input type="number" id="tsubo" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromTsubo(this.value)">
+        <div class="unit-desc">1坪 = 3.3057 m²</div>
+      </div>
+      <div class="unit-card">
+        <div class="unit-label">
+          <span class="unit-kanji">㎡</span>
+          <span class="unit-sub">平米</span>
+        </div>
+        <input type="number" id="m2" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromM2(this.value)">
+        <div class="unit-desc">1m² ≈ 0.6038 畳 / 0.3025 坪</div>
+      </div>
+    </div>
+
+    <div class="ref-section">
+      <p class="ref-title">よくある間取りの広さ（タップで入力）</p>
+      <div class="ref-grid">
+        <div class="ref-item" onclick="setJo(4.5)">
+          <div class="ref-name">4.5畳（和室）</div>
+          <div class="ref-vals">2.25 坪 <span>/ 7.45 m²</span></div>
+        </div>
+        <div class="ref-item" onclick="setJo(6)">
+          <div class="ref-name">6畳（洋室）</div>
+          <div class="ref-vals">3.01 坪 <span>/ 9.94 m²</span></div>
+        </div>
+        <div class="ref-item" onclick="setJo(8)">
+          <div class="ref-name">8畳（LDK）</div>
+          <div class="ref-vals">4.01 坪 <span>/ 13.25 m²</span></div>
+        </div>
+        <div class="ref-item" onclick="setJo(20)">
+          <div class="ref-name">20畳（広めリビング）</div>
+          <div class="ref-vals">10.02 坪 <span>/ 33.12 m²</span></div>
+        </div>
+        <div class="ref-item" onclick="setTsubo(30)">
+          <div class="ref-name">30坪（一戸建て）</div>
+          <div class="ref-vals">59.88 畳 <span>/ 99.17 m²</span></div>
+        </div>
+        <div class="ref-item" onclick="setM2(50)">
+          <div class="ref-name">50m²（1LDK）</div>
+          <div class="ref-vals">30.19 畳 <span>/ 15.13 坪</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="rate-note">※ 1畳 = 910mm × 1820mm、1坪 = 3.3057 m²（それぞれ独立した定義）</p>
+  </div>
+
+  <script>
+    const JO_M2 = 0.910 * 1.820;
+    const TSUBO_M2 = 3.3057;
+
+    function fmt(v) {
+      if (v === '' || isNaN(v)) return '';
+      const n = parseFloat(v);
+      if (n === 0) return '0';
+      return parseFloat(n.toFixed(4)).toString();
+    }
+
+    function fromJo(v) {
+      const n = parseFloat(v);
+      if (isNaN(n)) { document.getElementById('tsubo').value = ''; document.getElementById('m2').value = ''; return; }
+      const m2 = n * JO_M2;
+      document.getElementById('m2').value = fmt(m2);
+      document.getElementById('tsubo').value = fmt(m2 / TSUBO_M2);
+    }
+    function fromTsubo(v) {
+      const n = parseFloat(v);
+      if (isNaN(n)) { document.getElementById('jo').value = ''; document.getElementById('m2').value = ''; return; }
+      const m2 = n * TSUBO_M2;
+      document.getElementById('m2').value = fmt(m2);
+      document.getElementById('jo').value = fmt(m2 / JO_M2);
+    }
+    function fromM2(v) {
+      const n = parseFloat(v);
+      if (isNaN(n)) { document.getElementById('jo').value = ''; document.getElementById('tsubo').value = ''; return; }
+      document.getElementById('jo').value = fmt(n / JO_M2);
+      document.getElementById('tsubo').value = fmt(n / TSUBO_M2);
+    }
+    function setJo(v) { document.getElementById('jo').value = v; fromJo(v); }
+    function setTsubo(v) { document.getElementById('tsubo').value = v; fromTsubo(v); }
+    function setM2(v) { document.getElementById('m2').value = v; fromM2(v); }
+  </script>
+</body>
+</html>
