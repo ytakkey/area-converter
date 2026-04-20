@@ -9,23 +9,25 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f8f7f4;
+      --bg: #f5f4f0;
       --surface: #ffffff;
-      --border: rgba(0,0,0,0.12);
-      --border-hover: rgba(0,0,0,0.25);
+      --surface-sub: #f0efeb;
+      --border: rgba(0,0,0,0.10);
+      --border-hover: rgba(0,0,0,0.22);
       --text-primary: #1a1a18;
-      --text-secondary: #5f5e5a;
-      --text-tertiary: #9a9893;
+      --text-secondary: #6a6966;
+      --text-tertiary: #a8a7a3;
       --radius-md: 8px;
       --radius-lg: 12px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1c1c1a;
-        --surface: #242422;
-        --border: rgba(255,255,255,0.12);
-        --border-hover: rgba(255,255,255,0.28);
+        --bg: #242422;
+        --surface: #2e2e2c;
+        --surface-sub: #363634;
+        --border: rgba(255,255,255,0.10);
+        --border-hover: rgba(255,255,255,0.24);
         --text-primary: #eeecea;
         --text-secondary: #a8a7a3;
         --text-tertiary: #6a6966;
@@ -66,10 +68,10 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
-    @media (max-width: 420px) {
+    @media (max-width: 400px) {
       .unit-grid { grid-template-columns: 1fr; }
     }
 
@@ -97,26 +99,62 @@
       font-size: 11px;
       color: var(--text-secondary);
     }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 4px;
+      transition: border-color 0.15s;
+    }
+    .unit-card:focus-within .input-row {
+      border-color: var(--border-hover);
+    }
     .unit-card input {
-      width: 100%;
+      flex: 1;
+      min-width: 0;
       font-size: 18px;
       font-weight: 500;
       font-family: inherit;
       border: none;
-      border-bottom: 1.5px solid var(--border);
       background: transparent;
       color: var(--text-primary);
       padding: 4px 0;
       outline: none;
-      transition: border-color 0.15s;
     }
-    .unit-card input:focus {
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    .spin-btn {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border: 0.5px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-sub);
+      color: var(--text-secondary);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .spin-btn:hover {
+      background: var(--bg);
       border-color: var(--border-hover);
+      color: var(--text-primary);
     }
+    .spin-btn:active { opacity: 0.65; }
+
     .unit-desc {
       font-size: 11px;
       color: var(--text-tertiary);
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .ref-section {
@@ -137,16 +175,17 @@
       gap: 8px;
     }
     .ref-item {
-      background: var(--bg);
+      background: var(--surface-sub);
       border: 0.5px solid var(--border);
       border-radius: var(--radius-md);
       padding: 10px 12px;
       cursor: pointer;
       transition: border-color 0.15s;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .ref-item:hover { border-color: var(--border-hover); }
-    .ref-item:active { opacity: 0.8; }
+    .ref-item:active { opacity: 0.75; }
     .ref-name {
       font-size: 12px;
       color: var(--text-secondary);
@@ -183,7 +222,11 @@
           <span class="unit-kanji">畳</span>
           <span class="unit-sub">じょう</span>
         </div>
-        <input type="number" id="jo" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromJo(this.value)">
+        <div class="input-row">
+          <button class="spin-btn" onclick="step('jo', -0.5)">−</button>
+          <input type="number" id="jo" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromJo(this.value)">
+          <button class="spin-btn" onclick="step('jo', 0.5)">+</button>
+        </div>
         <div class="unit-desc">1畳 = 910 × 1820 mm = 1.6562 m²</div>
       </div>
       <div class="unit-card">
@@ -191,7 +234,11 @@
           <span class="unit-kanji">坪</span>
           <span class="unit-sub">つぼ</span>
         </div>
-        <input type="number" id="tsubo" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromTsubo(this.value)">
+        <div class="input-row">
+          <button class="spin-btn" onclick="step('tsubo', -0.5)">−</button>
+          <input type="number" id="tsubo" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromTsubo(this.value)">
+          <button class="spin-btn" onclick="step('tsubo', 0.5)">+</button>
+        </div>
         <div class="unit-desc">1坪 = 3.3057 m²</div>
       </div>
       <div class="unit-card">
@@ -199,7 +246,11 @@
           <span class="unit-kanji">㎡</span>
           <span class="unit-sub">平米</span>
         </div>
-        <input type="number" id="m2" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromM2(this.value)">
+        <div class="input-row">
+          <button class="spin-btn" onclick="step('m2', -0.5)">−</button>
+          <input type="number" id="m2" placeholder="0" min="0" step="0.5" inputmode="decimal" oninput="fromM2(this.value)">
+          <button class="spin-btn" onclick="step('m2', 0.5)">+</button>
+        </div>
         <div class="unit-desc">1m² ≈ 0.6038 畳 / 0.3025 坪</div>
       </div>
     </div>
@@ -271,6 +322,14 @@
     function setJo(v) { document.getElementById('jo').value = v; fromJo(v); }
     function setTsubo(v) { document.getElementById('tsubo').value = v; fromTsubo(v); }
     function setM2(v) { document.getElementById('m2').value = v; fromM2(v); }
+
+    function step(id, delta) {
+      const el = document.getElementById(id);
+      const cur = parseFloat(el.value) || 0;
+      const next = Math.max(0, parseFloat((cur + delta).toFixed(2)));
+      el.value = next;
+      el.dispatchEvent(new Event('input'));
+    }
   </script>
 </body>
 </html>
