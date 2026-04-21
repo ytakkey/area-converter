@@ -14,6 +14,7 @@
       --sep:          rgba(0,0,0,0.07);
       --btn:          rgba(255,255,255,0.60);
       --btn-border:   rgba(0,0,0,0.10);
+      --btn-active:   rgba(0,0,0,0.08);
       --ref:          rgba(255,255,255,0.55);
       --ref-border:   rgba(255,255,255,0.75);
       --shadow-lg:    0 12px 40px rgba(70,60,50,0.15), 0 2px 6px rgba(70,60,50,0.08);
@@ -21,6 +22,10 @@
       --text-1: #1a1916;
       --text-2: #6b6966;
       --text-3: #b2afa9;
+      --input-line:       rgba(0,0,0,0.13);
+      --input-line-focus: rgba(0,0,0,0.28);
+      --input-bg:         rgba(0,0,0,0.04);
+      --input-bg-focus:   rgba(0,0,0,0.07);
       --r-xl: 22px; --r-lg: 16px; --r-md: 10px;
     }
     @media (prefers-color-scheme: dark) {
@@ -30,6 +35,7 @@
         --sep:          rgba(255,255,255,0.08);
         --btn:          rgba(255,255,255,0.07);
         --btn-border:   rgba(255,255,255,0.14);
+        --btn-active:   rgba(255,255,255,0.12);
         --ref:          rgba(36,34,32,0.70);
         --ref-border:   rgba(255,255,255,0.10);
         --shadow-lg:    0 12px 40px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.25);
@@ -37,6 +43,10 @@
         --text-1: #edecea;
         --text-2: #a8a5a1;
         --text-3: #6a6764;
+        --input-line:       rgba(255,255,255,0.14);
+        --input-line-focus: rgba(255,255,255,0.35);
+        --input-bg:         rgba(255,255,255,0.06);
+        --input-bg-focus:   rgba(255,255,255,0.10);
       }
     }
 
@@ -68,10 +78,27 @@
 
     .container { width: 100%; max-width: 520px; }
 
-    /* ── header ── */
-    .header { margin-bottom: 1.75rem; }
-    .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: .13em; color: var(--text-3); margin-bottom: 5px; }
-    .title   { font-size: 27px; font-weight: 600; letter-spacing: -.025em; color: var(--text-1); }
+    /* ── reset button ── */
+    .header {
+      margin-bottom: 1.75rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .reset-btn {
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 500;
+      color: var(--text-3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+      letter-spacing: .03em;
+      -webkit-tap-highlight-color: transparent;
+      transition: color .15s;
+    }
+    .reset-btn:hover { color: var(--text-2); }
 
     /* ── unit card (single glass panel, 3 rows) ── */
     .unit-card {
@@ -104,18 +131,26 @@
     .uk { font-size: 17px; font-weight: 600; color: var(--text-1); }
     .us { font-size: 10px; color: var(--text-3); }
 
+
+
     .unit-input {
       flex: 1;
       min-width: 0;
       font-size: 22px;
       font-weight: 600;
       font-family: inherit;
-      border: none;
-      background: transparent;
+      border: 1px solid var(--input-line);
+      border-radius: 8px;
+      background: var(--input-bg);
       color: var(--text-1);
       outline: none;
-      padding: 0;
+      padding: 5px 9px;
       caret-color: var(--text-2);
+      transition: border-color .15s, background .15s;
+    }
+    .unit-input:focus {
+      border-color: var(--input-line-focus);
+      background: var(--input-bg-focus);
     }
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
@@ -146,10 +181,11 @@
       justify-content: center;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-      transition: background .1s, color .1s, transform .07s;
+      transition: background .12s, color .12s;
     }
-    .st-btn:hover  { background: rgba(255,255,255,0.55); color: var(--text-1); }
-    .st-btn:active { transform: scale(0.87); opacity: .6; }
+    .st-btn:hover           { background: rgba(255,255,255,0.55); color: var(--text-1); }
+    .st-btn:active          { background: var(--btn-active); color: var(--text-1); }
+    .st-btn:disabled        { opacity: 0.28; cursor: default; pointer-events: none; }
     .st-div { width: 1px; background: var(--btn-border); flex-shrink: 0; }
 
     /* ── price card ── */
@@ -213,41 +249,49 @@
     .rv em { font-style: normal; color: var(--text-3); font-weight: 400; font-size: 10px; }
 
     /* ── footnote ── */
-    .footnote { text-align: center; font-size: 10px; color: var(--text-3); margin-top: 1.4rem; }
+    .footnote {
+      font-size: 10px; color: var(--text-3);
+      margin: 1.4rem auto 0;
+      width: fit-content;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 <div class="container">
 
   <div class="header">
-    <p class="eyebrow">面積単位換算</p>
-    <h1 class="title">畳 · 坪 · 平米</h1>
+    <div>
+      <p class="eyebrow">面積単位換算</p>
+      <h1 class="title">畳 · 坪 · 平米</h1>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">リセット</button>
   </div>
 
   <div class="unit-card">
     <div class="unit-row">
       <div class="unit-label"><span class="uk">畳</span><span class="us">じょう</span></div>
-      <input class="unit-input" type="number" id="jo"    placeholder="—" min="0" step="0.5" inputmode="decimal" oninput="fromJo(this.value)">
+      <input class="unit-input" type="number" id="jo"    value="0" min="0" step="0.5" inputmode="decimal" oninput="fromJo(this.value)">
       <div class="stepper">
-        <button class="st-btn" onclick="step('jo',-0.5)">−</button>
+        <button class="st-btn" id="jo-minus"    onclick="step('jo',-0.5)">−</button>
         <div class="st-div"></div>
         <button class="st-btn" onclick="step('jo',0.5)">+</button>
       </div>
     </div>
     <div class="unit-row">
       <div class="unit-label"><span class="uk">坪</span><span class="us">つぼ</span></div>
-      <input class="unit-input" type="number" id="tsubo" placeholder="—" min="0" step="0.5" inputmode="decimal" oninput="fromTsubo(this.value)">
+      <input class="unit-input" type="number" id="tsubo" value="0" min="0" step="0.5" inputmode="decimal" oninput="fromTsubo(this.value)">
       <div class="stepper">
-        <button class="st-btn" onclick="step('tsubo',-0.5)">−</button>
+        <button class="st-btn" id="tsubo-minus" onclick="step('tsubo',-0.5)">−</button>
         <div class="st-div"></div>
         <button class="st-btn" onclick="step('tsubo',0.5)">+</button>
       </div>
     </div>
     <div class="unit-row">
       <div class="unit-label"><span class="uk">㎡</span><span class="us">平米</span></div>
-      <input class="unit-input" type="number" id="m2"    placeholder="—" min="0" step="0.5" inputmode="decimal" oninput="fromM2(this.value)">
+      <input class="unit-input" type="number" id="m2"    value="0" min="0" step="0.5" inputmode="decimal" oninput="fromM2(this.value)">
       <div class="stepper">
-        <button class="st-btn" onclick="step('m2',-0.5)">−</button>
+        <button class="st-btn" id="m2-minus"    onclick="step('m2',-0.5)">−</button>
         <div class="st-div"></div>
         <button class="st-btn" onclick="step('m2',0.5)">+</button>
       </div>
@@ -267,23 +311,7 @@
 
   <div class="section-gap">
     <p class="ref-eyebrow">間取りの目安</p>
-    <div class="ref-grid">
-      <div class="ri" onclick="setJo(4.5)">
-        <div class="rn">4.5畳・和室</div><div class="rv">7.45 m² <em>/ 2.25坪</em></div>
-      </div>
-      <div class="ri" onclick="setJo(6)">
-        <div class="rn">6畳・洋室</div><div class="rv">9.94 m² <em>/ 3.01坪</em></div>
-      </div>
-      <div class="ri" onclick="setJo(8)">
-        <div class="rn">8畳・LDK</div><div class="rv">13.25 m² <em>/ 4.01坪</em></div>
-      </div>
-      <div class="ri" onclick="setJo(20)">
-        <div class="rn">20畳・リビング</div><div class="rv">33.12 m² <em>/ 10坪</em></div>
-      </div>
-      <div class="ri" onclick="setTsubo(30)">
-        <div class="rn">30坪・一戸建て</div><div class="rv">99.17 m² <em>/ 59.9畳</em></div>
-      </div>
-    </div>
+    <div class="ref-grid" id="ref-grid"></div>
   </div>
 
   <p class="footnote" id="footnote"></p>
@@ -291,23 +319,56 @@
 </div>
 <script>
   /* ── 定数 ── すべての表示値はここから自動生成 */
-  const JO_W      = 910;       // 畳の短辺 mm
-  const JO_H      = 1820;      // 畳の長辺 mm
-  const TSU_M2    = 3.3057;    // 1坪 in m²
-  const UNIT_PRICE= 237160;    // 建物本体単価 円/m²
-  const TAX_RATE  = 0.10;      // 消費税率
+  const JO_W       = 910;
+  const JO_H       = 1820;
+  const TSU_M2     = 3.3057;
+  const UNIT_PRICE = 237160;
+  const TAX_RATE   = 0.10;
+  const JO_M2      = JO_W / 1000 * JO_H / 1000;
 
-  const JO_M2 = JO_W / 1000 * JO_H / 1000;
+  /* ── プリセット定義（表示値はJSが計算） ── */
+  const PRESETS = [
+    { label: '4.5畳・和室',    unit: 'jo',    value: 4.5 },
+    { label: '6畳・洋室',      unit: 'jo',    value: 6   },
+    { label: '8畳・LDK',       unit: 'jo',    value: 8   },
+    { label: '20畳・リビング', unit: 'jo',    value: 20  },
+    { label: '30坪・一戸建て', unit: 'tsubo', value: 30  },
+  ];
 
-  /* 初期テキスト */
+  /* ── 初期テキスト ── */
   document.getElementById('pc-rate').textContent =
     UNIT_PRICE.toLocaleString() + ' 円 / m²';
   document.getElementById('footnote').textContent =
-    '1畳 = ' + JO_W + ' × ' + JO_H + ' mm\u3000·\u30001坪 = ' + TSU_M2 + ' m²\u3000·\u3000消費税率 = ' + (TAX_RATE * 100) + '%';
+    '1畳 = ' + JO_W + ' × ' + JO_H + ' mm　·　1坪 = ' + TSU_M2 + ' m²　·　消費税率 = ' + (TAX_RATE * 100) + '%';
 
-  /* ── 換算 ── */
+  /* ── プリセットを動的に生成 ── */
+  function fmtSub(v) { return parseFloat(v.toFixed(2)).toString(); }
+  const grid = document.getElementById('ref-grid');
+  PRESETS.forEach(p => {
+    const m2  = p.unit === 'jo'    ? p.value * JO_M2
+              : p.unit === 'tsubo' ? p.value * TSU_M2
+              :                      p.value;
+    const jo  = m2 / JO_M2;
+    const tsu = m2 / TSU_M2;
+    const secondary = p.unit === 'jo'
+      ? fmtSub(tsu) + '坪'
+      : fmtSub(jo)  + '畳';
+    const div = document.createElement('div');
+    div.className = 'ri';
+    div.innerHTML =
+      '<div class="rn">' + p.label + '</div>' +
+      '<div class="rv">' + fmtSub(m2) + ' m² <em>/ ' + secondary + '</em></div>';
+    div.onclick = () => {
+      if (p.unit === 'jo')    setJo(p.value);
+      else if (p.unit === 'tsubo') setTsubo(p.value);
+      else setM2(p.value);
+    };
+    grid.appendChild(div);
+  });
+
+  /* ── ユーティリティ ── */
   function fmt(v) {
-    if (isNaN(v)) return '';
+    if (isNaN(v)) return '0';
     const n = parseFloat(v);
     return n === 0 ? '0' : parseFloat(n.toFixed(4)).toString();
   }
@@ -317,6 +378,16 @@
     if (m > 0) { const r = p % 10000; return m.toLocaleString() + '万' + (r > 0 ? r.toLocaleString() + '円' : '円'); }
     return p.toLocaleString() + '円';
   }
+
+  /* ── マイナスボタンの有効・無効 ── */
+  function updateMinusButtons() {
+    ['jo', 'tsubo', 'm2'].forEach(id => {
+      const val = parseFloat(document.getElementById(id).value) || 0;
+      document.getElementById(id + '-minus').disabled = val <= 0;
+    });
+  }
+
+  /* ── 価格更新 ── */
   function updatePrice(m2) {
     const ex = document.getElementById('pr-ex'), inc = document.getElementById('pr-inc');
     if (isNaN(m2) || m2 <= 0) {
@@ -325,32 +396,38 @@
       return;
     }
     const p = Math.round(m2 * UNIT_PRICE);
-    ex.textContent  = kanji(p);                        ex.className  = 'pex';
+    ex.textContent  = kanji(p);                             ex.className  = 'pex';
     inc.textContent = kanji(Math.round(p * (1 + TAX_RATE))); inc.className = 'pinc';
   }
+
+  /* ── 換算 ── */
   function fromJo(v) {
     const n = parseFloat(v);
-    if (isNaN(n)) { document.getElementById('tsubo').value = ''; document.getElementById('m2').value = ''; updatePrice(NaN); return; }
+    if (isNaN(n) || n < 0) { document.getElementById('tsubo').value = '0'; document.getElementById('m2').value = '0'; updatePrice(0); updateMinusButtons(); return; }
     const m2 = n * JO_M2;
     document.getElementById('m2').value    = fmt(m2);
     document.getElementById('tsubo').value = fmt(m2 / TSU_M2);
     updatePrice(m2);
+    updateMinusButtons();
   }
   function fromTsubo(v) {
     const n = parseFloat(v);
-    if (isNaN(n)) { document.getElementById('jo').value = ''; document.getElementById('m2').value = ''; updatePrice(NaN); return; }
+    if (isNaN(n) || n < 0) { document.getElementById('jo').value = '0'; document.getElementById('m2').value = '0'; updatePrice(0); updateMinusButtons(); return; }
     const m2 = n * TSU_M2;
     document.getElementById('m2').value = fmt(m2);
     document.getElementById('jo').value = fmt(m2 / JO_M2);
     updatePrice(m2);
+    updateMinusButtons();
   }
   function fromM2(v) {
     const n = parseFloat(v);
-    if (isNaN(n)) { document.getElementById('jo').value = ''; document.getElementById('tsubo').value = ''; updatePrice(NaN); return; }
+    if (isNaN(n) || n < 0) { document.getElementById('jo').value = '0'; document.getElementById('tsubo').value = '0'; updatePrice(0); updateMinusButtons(); return; }
     document.getElementById('jo').value    = fmt(n / JO_M2);
     document.getElementById('tsubo').value = fmt(n / TSU_M2);
     updatePrice(n);
+    updateMinusButtons();
   }
+
   function setJo(v)    { document.getElementById('jo').value    = v; fromJo(v); }
   function setTsubo(v) { document.getElementById('tsubo').value = v; fromTsubo(v); }
   function setM2(v)    { document.getElementById('m2').value    = v; fromM2(v); }
@@ -364,8 +441,20 @@
                       : delta > 0 ? Math.ceil(cur  / 0.5) * 0.5
                                   : Math.floor(cur / 0.5) * 0.5;
     el.value = Math.max(0, parseFloat(next.toFixed(2)));
-    el.dispatchEvent(new Event('input'));
+    if (id === 'jo')         fromJo(el.value);
+    else if (id === 'tsubo') fromTsubo(el.value);
+    else                     fromM2(el.value);
   }
+
+  /* ── リセット ── */
+  function resetAll() {
+    ['jo', 'tsubo', 'm2'].forEach(id => document.getElementById(id).value = '0');
+    updatePrice(0);
+    updateMinusButtons();
+  }
+
+  /* ── 初期化 ── */
+  updateMinusButtons();
 </script>
 </body>
 </html>
